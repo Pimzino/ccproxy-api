@@ -575,3 +575,7 @@ def get_settings(config_path: Path | str | None = None) -> Settings:
         # If settings can't be loaded (e.g., missing API key),
         # this will be handled by the caller
         raise ValueError(f"Configuration error: {e}") from e
+
+
+# Rebuild the model to resolve forward references from nested settings
+Settings.model_rebuild()
