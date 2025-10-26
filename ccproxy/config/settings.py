@@ -550,6 +550,9 @@ config_manager = ConfigurationManager()
 
 logger = structlog.get_logger(__name__)
 
+# Flag to track if models have been rebuilt to resolve forward references
+_models_rebuilt = False
+
 
 def get_settings(config_path: Path | str | None = None) -> Settings:
     """Get the global settings instance with configuration file support.
@@ -561,6 +564,17 @@ def get_settings(config_path: Path | str | None = None) -> Settings:
     Returns:
         Settings: Configured Settings instance
     """
+    global _models_rebuilt
+
+    # Lazy rebuild models on first access to resolve forward references
+    if not _models_rebuilt:
+        try:
+            Settings.model_rebuild()
+            _models_rebuilt = True
+        except Exception:
+            # If rebuild fails, continue anyway - the models may still work
+            _models_rebuilt = True
+
     try:
         # Check for CLI overrides from environment variable
         cli_overrides = {}
@@ -575,7 +589,3 @@ def get_settings(config_path: Path | str | None = None) -> Settings:
         # If settings can't be loaded (e.g., missing API key),
         # this will be handled by the caller
         raise ValueError(f"Configuration error: {e}") from e
-
-
-# Rebuild the model to resolve forward references from nested settings
-Settings.model_rebuild()

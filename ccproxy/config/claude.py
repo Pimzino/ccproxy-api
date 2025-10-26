@@ -346,7 +346,3 @@ class ClaudeSettings(BaseModel):
             paths.append(str(path))
 
         return paths
-
-
-# Rebuild the model to resolve forward references from claude_code_sdk
-ClaudeSettings.model_rebuild()
